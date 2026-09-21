@@ -76,12 +76,16 @@ export class AuthService {
     }
 
     try {
-      await this.jwtService.verifyAsync<RefreshTokenPayload>(
+      const payload = await this.jwtService.verifyAsync<RefreshTokenPayload>(
         dto.refreshToken,
         {
           secret: this.configService.getOrThrow<string>('JWT_REFRESH_SECRET'),
         },
       );
+
+      if (payload.type !== 'refresh' || payload.sub !== storedToken.user.id) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
     } catch {
       throw new UnauthorizedException('Invalid refresh token');
     }
@@ -106,11 +110,11 @@ export class AuthService {
   }
 
   private async issueTokens(user: User): Promise<AuthResponse> {
-    const accessTtl = this.configService.getOrThrow<number>(
-      'JWT_ACCESS_TTL_SECONDS',
+    const accessTtl = Number(
+      this.configService.getOrThrow<string>('JWT_ACCESS_TTL_SECONDS'),
     );
-    const refreshTtl = this.configService.getOrThrow<number>(
-      'JWT_REFRESH_TTL_SECONDS',
+    const refreshTtl = Number(
+      this.configService.getOrThrow<string>('JWT_REFRESH_TTL_SECONDS'),
     );
 
     const accessToken = await this.jwtService.signAsync(
