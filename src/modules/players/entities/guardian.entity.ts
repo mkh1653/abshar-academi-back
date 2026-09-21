@@ -1,10 +1,13 @@
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, OneToOne } from 'typeorm';
 import { BaseEntity } from '../../../common/database/base.entity';
+import { User } from '../../users/entities/user.entity';
 
 @Entity('guardians')
+@Index(['mobile'], { unique: true })
 export class Guardian extends BaseEntity {
-  @Column({ name: 'user_id', type: 'uuid', nullable: true, unique: true })
-  userId!: string | null;
+  @OneToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'user_id' })
+  user!: User | null;
 
   @Column({ name: 'first_name', type: 'varchar', length: 100 })
   firstName!: string;
