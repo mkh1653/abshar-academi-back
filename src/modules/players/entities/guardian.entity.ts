@@ -1,9 +1,8 @@
-import { Column, Entity, Index, JoinColumn, OneToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { BaseEntity } from '../../../common/database/base.entity';
 import { User } from '../../users/entities/user.entity';
 
 @Entity('guardians')
-@Index(['mobile'], { unique: true })
 export class Guardian extends BaseEntity {
   @OneToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'user_id' })
