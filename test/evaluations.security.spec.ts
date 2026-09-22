@@ -12,6 +12,7 @@ describe('EvaluationsService security', () => {
       }) } as any,
       { findOne: jest.fn() } as any,
       { findOne: jest.fn() } as any,
+      { findOne: jest.fn() } as any,
     );
 
     await expect(
