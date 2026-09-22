@@ -1,6 +1,7 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../../../common/database/base.entity';
 import { Invoice } from './invoice.entity';
+import { Order } from '../../shop/entities/order.entity';
 import { PaymentMethod } from '../enums/payment-method.enum';
 import { PaymentStatus } from '../enums/payment-status.enum';
 
@@ -11,6 +12,10 @@ export class Payment extends BaseEntity {
   @ManyToOne(() => Invoice, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'invoice_id' })
   invoice!: Invoice | null;
+
+  @ManyToOne(() => Order, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'order_id' })
+  order!: Order | null;
 
   @Column({ name: 'amount_rial', type: 'bigint' })
   amountRial!: string;
