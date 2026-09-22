@@ -8,6 +8,7 @@ import { UserRole } from '../users/enums/user-role.enum';
 import { CreateProductDto } from './dto/create-product.dto';
 import { CreateVariantDto } from './dto/create-variant.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { CreateOrderPaymentDto } from './dto/create-order-payment.dto';
 import { ShopService } from './shop.service';
 
 @Controller()
@@ -36,7 +37,7 @@ export class ShopController {
   @Post('shop/payments/initiate')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.PARENT)
-  initiatePayment(@CurrentUser() user: User, @Body() dto: import('../finance/dto/create-payment.dto').CreatePaymentDto) {
+  initiatePayment(@CurrentUser() user: User, @Body() dto: CreateOrderPaymentDto) {
     return this.shop.initiatePayment(user, dto);
   }
 
