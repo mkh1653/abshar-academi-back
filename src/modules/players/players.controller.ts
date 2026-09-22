@@ -26,8 +26,8 @@ export class PlayersController {
   @Get('players')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.COACH)
-  list(@Query() query: PlayerQueryDto) {
-    return this.playersService.list(query);
+  list(@Query() query: PlayerQueryDto, @CurrentUser() user: User) {
+    return this.playersService.list(query, user);
   }
 
   @Get('players/my-children')
