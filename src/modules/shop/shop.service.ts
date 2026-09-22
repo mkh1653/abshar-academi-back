@@ -10,6 +10,7 @@ import { Order } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { OrderStatus } from './enums/order-status.enum';
 import { CreateProductDto } from './dto/create-product.dto';
+import { CreateVariantDto } from './dto/create-variant.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
 
 @Injectable()
@@ -34,6 +35,18 @@ export class ShopService {
       description: dto.description ?? null,
       priceRial: String(dto.priceRial),
       isActive: true,
+    }));
+  }
+
+  async createVariant(dto: CreateVariantDto) {
+    const product = await this.products.findOne({ where: { id: dto.productId } });
+    if (!product) throw new NotFoundException('Product not found');
+    return this.variants.save(this.variants.create({
+      product,
+      sku: dto.sku,
+      size: dto.size ?? null,
+      stockQuantity: dto.stockQuantity,
+      priceRial: dto.priceRial === undefined ? null : String(dto.priceRial),
     }));
   }
 
