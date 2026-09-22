@@ -44,19 +44,10 @@ export class PlayersController {
     return this.playersService.getForUser(id, user);
   }
 
-  @Patch('players/:id')
+  @Patch('admin/players/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.PARENT)
-  update(
-    @Param('id') id: string,
-    @Body() dto: UpdatePlayerDto,
-    @CurrentUser() user: User,
-  ) {
-    if (user.role === UserRole.PARENT) {
-      return this.playersService.getForUser(id, user).then(() =>
-        this.playersService.update(id, dto),
-      );
-    }
+  @Roles(UserRole.ADMIN)
+  update(@Param('id') id: string, @Body() dto: UpdatePlayerDto) {
     return this.playersService.update(id, dto);
   }
 
