@@ -7,6 +7,7 @@ import { AttendanceModule } from './modules/attendance/attendance.module';
 import { AcademyModule } from './modules/academy/academy.module';
 import { CoachesModule } from './modules/coaches/coaches.module';
 import { DocumentsModule } from './modules/documents/documents.module';
+import { FinanceModule } from './modules/finance/finance.module';
 import { EvaluationsModule } from './modules/evaluations/evaluations.module';
 import { PlayersModule } from './modules/players/players.module';
 import { ProgressModule } from './modules/progress/progress.module';
@@ -30,6 +31,7 @@ import { UsersModule } from './modules/users/users.module';
     EvaluationsModule,
     ProgressModule,
     DocumentsModule,
+    FinanceModule,
   ],
 })
 export class AppModule {}
