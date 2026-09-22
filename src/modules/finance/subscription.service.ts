@@ -53,7 +53,7 @@ export class SubscriptionService {
       relations: { service: true },
     }).then(async (items) => {
       if (user.role !== UserRole.PARENT) return items;
-      const allowed = await this.players.query(
+      const allowed = await this.dataSource.query(
         'SELECT 1 FROM player_guardians pg INNER JOIN guardians g ON g.id = pg.guardian_id WHERE pg.player_id = $1 AND g.user_id = $2 LIMIT 1',
         [playerId, user.id],
       );
