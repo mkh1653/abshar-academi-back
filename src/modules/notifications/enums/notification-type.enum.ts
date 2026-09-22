@@ -1,0 +1,8 @@
+export enum NotificationType {
+  ANNOUNCEMENT = 'ANNOUNCEMENT',
+  PAYMENT = 'PAYMENT',
+  ATTENDANCE = 'ATTENDANCE',
+  TRAINING = 'TRAINING',
+  MATCH = 'MATCH',
+  GENERAL = 'GENERAL',
+}
