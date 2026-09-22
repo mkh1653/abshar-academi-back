@@ -37,6 +37,14 @@ export class ReportsService {
       if (!allowed.length) throw new ForbiddenException('You cannot access this player');
     }
 
+    if (role === 'COACH') {
+      const playerScope = await this.dataSource.query(
+        'SELECT 1 FROM players p INNER JOIN coaches c ON c.id = p.responsible_coach_id INNER JOIN users u ON u.id = c.user_id WHERE p.id = $1 AND u.id = $2 LIMIT 1',
+        [playerId, userId],
+      );
+      if (!playerScope.length) throw new ForbiddenException('You cannot access this player');
+    }
+
     const [attendance, assessments, progress] = await Promise.all([
       this.dataSource.query(
         'SELECT status, COUNT(*)::int AS count FROM attendance_records WHERE player_id = $1 GROUP BY status',
