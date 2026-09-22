@@ -72,6 +72,21 @@ export class DocumentsService {
       });
     }
 
+    if (user.role === UserRole.COACH) {
+      return this.players.findOne({
+        where: { id: playerId },
+        relations: { responsibleCoach: { user: true } },
+      }).then((player) => {
+        if (!player || player.responsibleCoach?.user?.id !== user.id) {
+          throw new ForbiddenException('You cannot access documents');
+        }
+        return this.documents.find({
+          where: { player: { id: playerId } },
+          order: { createdAt: 'DESC' },
+        });
+      });
+    }
+
     return this.documents.find({
       where: { player: { id: playerId } },
       order: { createdAt: 'DESC' },
@@ -90,6 +105,16 @@ export class DocumentsService {
         where: { player: { id: document.player.id }, guardian: { user: { id: user.id } } },
       });
       if (!allowed) throw new ForbiddenException('You cannot access this document');
+    }
+
+    if (user.role === UserRole.COACH) {
+      const player = await this.players.findOne({
+        where: { id: document.player.id },
+        relations: { responsibleCoach: { user: true } },
+      });
+      if (!player || player.responsibleCoach?.user?.id !== user.id) {
+        throw new ForbiddenException('You cannot access this document');
+      }
     }
 
     return join(process.cwd(), 'storage', document.storageKey);
