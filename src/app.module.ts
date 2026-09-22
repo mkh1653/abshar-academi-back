@@ -8,6 +8,7 @@ import { AcademyModule } from './modules/academy/academy.module';
 import { CoachesModule } from './modules/coaches/coaches.module';
 import { DocumentsModule } from './modules/documents/documents.module';
 import { FinanceModule } from './modules/finance/finance.module';
+import { SubscriptionModule } from './modules/finance/subscription.module';
 import { EvaluationsModule } from './modules/evaluations/evaluations.module';
 import { PlayersModule } from './modules/players/players.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
@@ -42,6 +43,7 @@ import { UsersModule } from './modules/users/users.module';
     ProgressModule,
     DocumentsModule,
     FinanceModule,
+    SubscriptionModule,
   ],
 })
 export class AppModule {}
