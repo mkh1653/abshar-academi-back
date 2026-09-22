@@ -15,8 +15,8 @@ export class Coach extends BaseEntity {
   @Column({ name: 'last_name', type: 'varchar', length: 100 })
   lastName!: string;
 
-  @Column({ type: 'varchar', length: 20 })
-  mobile!: string;
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  mobile!: string | null;
 
   @Column({ type: 'text', nullable: true })
   bio!: string | null;
