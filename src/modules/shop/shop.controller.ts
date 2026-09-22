@@ -6,6 +6,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { User } from '../users/entities/user.entity';
 import { UserRole } from '../users/enums/user-role.enum';
 import { CreateProductDto } from './dto/create-product.dto';
+import { CreateVariantDto } from './dto/create-variant.dto';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { ShopService } from './shop.service';
 
@@ -23,6 +24,13 @@ export class ShopController {
   @Roles(UserRole.ADMIN)
   createProduct(@Body() dto: CreateProductDto) {
     return this.shop.createProduct(dto);
+  }
+
+  @Post('admin/shop/variants')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  createVariant(@Body() dto: CreateVariantDto) {
+    return this.shop.createVariant(dto);
   }
 
   @Post('shop/orders')
