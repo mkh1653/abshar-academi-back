@@ -8,16 +8,16 @@ export class ReportsService {
   async attendance(from?: string, to?: string, coachId?: string) {
     const start = from ?? '2000-01-01';
     const end = to ?? '2999-12-31';
-    const params: unknown[] = [start, end];
+    const params: unknown[] = ['PRESENT', 'ABSENT', 'LATE', start, end];
     let coachFilter = '';
     if (coachId) {
       params.push(coachId);
-      coachFilter = ' AND tg.coach_id = $3';
+      coachFilter = ' AND tg.coach_id = $6';
     }
 
     return this.dataSource.query(
       'SELECT p.id, p.player_code, p.first_name_fa, p.last_name_fa, COUNT(ar.id) FILTER (WHERE ar.status = $1) AS present, COUNT(ar.id) FILTER (WHERE ar.status = $2) AS absent, COUNT(ar.id) FILTER (WHERE ar.status = $3) AS late FROM players p INNER JOIN attendance_records ar ON ar.player_id = p.id INNER JOIN training_sessions ts ON ts.id = ar.training_session_id INNER JOIN training_groups tg ON tg.id = ts.training_group_id WHERE ts.session_date BETWEEN $4 AND $5' + coachFilter + ' GROUP BY p.id ORDER BY p.first_name_fa',
-      ['PRESENT', 'ABSENT', 'LATE', start, end, ...(coachId ? [coachId] : [])],
+      params,
     );
   }
 
