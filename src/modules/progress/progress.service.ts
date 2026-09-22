@@ -60,6 +60,16 @@ export class ProgressService {
       if (!allowed.length) throw new ForbiddenException('You cannot access this player');
     }
 
+    if (user.role === UserRole.COACH) {
+      const player = await this.players.findOne({
+        where: { id: playerId },
+        relations: { responsibleCoach: { user: true } },
+      });
+      if (!player || player.responsibleCoach?.user?.id !== user.id) {
+        throw new ForbiddenException('You cannot access this player');
+      }
+    }
+
     return this.reports.find({
       where: { player: { id: playerId } },
       relations: { coach: true },
