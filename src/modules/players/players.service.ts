@@ -20,6 +20,7 @@ import { Player } from './entities/player.entity';
 import { RegisterPlayerDto } from './dto/register-player.dto';
 import { UpdatePlayerDto } from './dto/update-player.dto';
 import { PlayerQueryDto } from './dto/player-query.dto';
+import { ChangeLevelDto } from './dto/change-level.dto';
 
 @Injectable()
 export class PlayersService {
@@ -300,6 +301,28 @@ export class PlayersService {
     if (dto.parentalConsent === true && !player.parentalConsentAt) player.parentalConsentAt = new Date();
     if (dto.mediaConsent === true) player.mediaConsentAt = new Date();
     if (dto.academyTermsAccepted === true) player.academyTermsAcceptedAt = new Date();
+    return this.players.save(player);
+  }
+
+  async changeTechnicalLevel(id: string, dto: ChangeLevelDto, user: User): Promise<Player> {
+    if (user.role !== UserRole.COACH) {
+      throw new ForbiddenException('Only coaches can change technical level');
+    }
+
+    const player = await this.players.findOne({
+      where: { id },
+      relations: { responsibleCoach: { user: true }, technicalLevel: true },
+    });
+    if (!player) throw new NotFoundException('Player not found');
+
+    if (player.responsibleCoach?.user?.id !== user.id) {
+      throw new ForbiddenException('You are not the responsible coach for this player');
+    }
+
+    const level = await this.levels.findOne({ where: { id: dto.levelId, isActive: true } });
+    if (!level) throw new NotFoundException('Level not found');
+
+    player.technicalLevel = level;
     return this.players.save(player);
   }
 
