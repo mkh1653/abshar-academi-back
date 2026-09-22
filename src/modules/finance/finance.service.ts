@@ -36,12 +36,10 @@ export class FinanceService {
     @InjectRepository(Service) private readonly services: Repository<Service>,
     @InjectRepository(Player) private readonly players: Repository<Player>,
     @InjectRepository(Invoice) private readonly invoices: Repository<Invoice>,
-    @InjectRepository(InvoiceItem) private readonly invoiceItems: Repository<InvoiceItem>,
     @InjectRepository(Payment) private readonly payments: Repository<Payment>,
     @InjectRepository(Expense) private readonly expenses: Repository<Expense>,
     @InjectRepository(Discount) private readonly discounts: Repository<Discount>,
   ) {}
-
   listServices() {
     return this.services.find({
       where: { isActive: true },
