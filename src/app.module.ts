@@ -11,6 +11,7 @@ import { FinanceModule } from './modules/finance/finance.module';
 import { EvaluationsModule } from './modules/evaluations/evaluations.module';
 import { PlayersModule } from './modules/players/players.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { HealthModule } from './modules/health/health.module';
 import { ShopModule } from './modules/shop/shop.module';
 import { ContentModule } from './modules/content/content.module';
 import { ProgressModule } from './modules/progress/progress.module';
@@ -32,6 +33,7 @@ import { UsersModule } from './modules/users/users.module';
     NotificationsModule,
     ShopModule,
     ContentModule,
+    HealthModule,
     AcademyModule,
     AttendanceModule,
     EvaluationsModule,
