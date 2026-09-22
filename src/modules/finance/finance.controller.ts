@@ -98,6 +98,13 @@ export class FinanceController {
     return this.financeService.listExpenses(query);
   }
 
+  @Get('family/season-summary')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.PARENT)
+  familySeasonSummary(@Query('season') season: string) {
+    return this.financeService.seasonSummary(season);
+  }
+
   @Get('admin/finance/summary')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
