@@ -1,7 +1,9 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { User } from '../users/entities/user.entity';
 import { UserRole } from '../users/enums/user-role.enum';
 import { ReportsService } from './reports.service';
 
@@ -30,7 +32,7 @@ export class ReportsController {
   @Get('players/:playerId/performance-summary')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.COACH, UserRole.PARENT)
-  performance(@Param('playerId') playerId: string) {
-    return this.reports.performance(playerId);
+  performance(@Param('playerId') playerId: string, @CurrentUser() user: User) {
+    return this.reports.performance(playerId, user.id, user.role);
   }
 }
