@@ -9,6 +9,7 @@ import { Invoice } from './entities/invoice.entity';
 import { InvoiceItem } from './entities/invoice-item.entity';
 import { Payment } from './entities/payment.entity';
 import { Expense } from './entities/expense.entity';
+import { Discount } from './entities/discount.entity';
 import { Player } from '../players/entities/player.entity';
 
 @Module({
@@ -20,6 +21,7 @@ import { Player } from '../players/entities/player.entity';
       InvoiceItem,
       Payment,
       Expense,
+      Discount,
       Player,
     ]),
   ],
