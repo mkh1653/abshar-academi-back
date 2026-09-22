@@ -6,6 +6,7 @@ import { PlayerGuardian } from '../players/entities/player-guardian.entity';
 import { TrainingGroup } from '../academy/entities/training-group.entity';
 import { TrainingSession } from '../academy/entities/training-session.entity';
 import { Attendance } from './entities/attendance.entity';
+import { GuestAttendance } from './entities/guest-attendance.entity';
 import { AttendanceController } from './attendance.controller';
 import { AttendanceService } from './attendance.service';
 
@@ -13,6 +14,7 @@ import { AttendanceService } from './attendance.service';
   imports: [
     TypeOrmModule.forFeature([
       Attendance,
+      GuestAttendance,
       TrainingSession,
       TrainingGroup,
       Player,
