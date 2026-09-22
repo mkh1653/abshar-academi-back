@@ -1,0 +1,9 @@
+export enum ExpenseCategory {
+  HALL = 'HALL',
+  EQUIPMENT = 'EQUIPMENT',
+  COACH = 'COACH',
+  SALARY = 'SALARY',
+  MARKETING = 'MARKETING',
+  OPERATIONAL = 'OPERATIONAL',
+  OTHER = 'OTHER',
+}

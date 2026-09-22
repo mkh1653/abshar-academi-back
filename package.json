@@ -17,7 +17,10 @@
     "typeorm": "typeorm-ts-node-commonjs",
     "migration:generate": "npm run typeorm -- migration:generate src/database/migrations/Initial -d src/database/data-source.ts",
     "migration:run": "npm run typeorm -- migration:run -d src/database/data-source.ts",
-    "migration:revert": "npm run typeorm -- migration:revert -d src/database/data-source.ts"
+    "migration:revert": "npm run typeorm -- migration:revert -d src/database/data-source.ts",
+    "seed:admin": "ts-node scripts/seed-admin.ts",
+    "test:e2e": "jest -c test/jest-e2e.json --runInBand",
+    "test:ci": "npm test -- --runInBand"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.0",
@@ -30,7 +33,15 @@
     "pg": "^8.13.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "typeorm": "^0.3.20"
+    "typeorm": "^0.3.20",
+    "dotenv": "^16.4.7",
+    "@nestjs/jwt": "^11.0.0",
+    "@nestjs/passport": "^11.0.0",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "@nestjs/mapped-types": "^2.1.0",
+    "@nestjs/swagger": "^11.0.0",
+    "bcryptjs": "^2.4.3"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",
@@ -51,6 +62,9 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typeorm-ts-node-commonjs": "^0.3.20",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "@types/passport-jwt": "^4.0.1",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/multer": "^1.4.12"
   }
 }
