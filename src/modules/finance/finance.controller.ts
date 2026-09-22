@@ -6,6 +6,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { User } from '../users/entities/user.entity';
 import { UserRole } from '../users/enums/user-role.enum';
 import { CreateExpenseDto } from './dto/create-expense.dto';
+import { CreateDiscountDto } from './dto/create-discount.dto';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { CreateServiceDto } from './dto/create-service.dto';
@@ -53,6 +54,34 @@ export class FinanceController {
   @Post('payments/callback')
   callback(@Body() dto: PaymentCallbackDto) {
     return this.financeService.callback(dto);
+  }
+
+  @Post('admin/discounts')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  createDiscount(@Body() dto: CreateDiscountDto) {
+    return this.financeService.createDiscount(dto);
+  }
+
+  @Get('payments')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.PARENT)
+  payments(@CurrentUser() user: User, @Query('playerId') playerId?: string) {
+    return this.financeService.listPayments(user, playerId);
+  }
+
+  @Get('family/academy-finance')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.PARENT)
+  familyFinance(@CurrentUser() user: User) {
+    return this.financeService.familyFinance(user);
+  }
+
+  @Get('admin/finance/debtors')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  debtors() {
+    return this.financeService.debtors();
   }
 
   @Post('admin/expenses')
