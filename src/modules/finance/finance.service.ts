@@ -126,6 +126,7 @@ export class FinanceService {
         dueDate: dto.dueDate,
         periodStart: dto.periodStart ?? null,
         periodEnd: dto.periodEnd ?? null,
+        season: dto.season ?? null,
         subtotalRial: String(subtotal),
         discountRial: String(discount),
         totalRial: String(subtotal - discount),
@@ -439,8 +440,8 @@ export class FinanceService {
   async seasonSummary(season: string) {
     const [incomeRows, expenseRows] = await Promise.all([
       this.dataSource.query(
-        'SELECT COALESCE(SUM(amount_rial),0)::text AS total FROM payments WHERE status = $1 AND created_at::date IN (SELECT issue_date FROM invoices WHERE period_start IS NOT NULL AND period_end IS NOT NULL)',
-        [PaymentStatus.SUCCESS],
+        'SELECT COALESCE(SUM(payment.amount_rial),0)::text AS total FROM payments payment INNER JOIN invoices invoice ON invoice.id = payment.invoice_id WHERE payment.status = $1 AND invoice.season = $2',
+        [PaymentStatus.SUCCESS, season],
       ),
       this.dataSource.query(
         'SELECT COALESCE(SUM(amount_rial),0)::text AS total FROM expenses WHERE season = $1',
