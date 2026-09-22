@@ -216,14 +216,22 @@ export class PlayersService {
     });
   }
 
-  async listByTrainingGroup(groupId: string) {
+  async listByTrainingGroup(groupId: string, user?: User) {
+    if (user?.role === UserRole.COACH) {
+      const rows = await this.dataSource.query(
+        'SELECT 1 FROM training_groups tg INNER JOIN coaches c ON c.id = tg.coach_id INNER JOIN users u ON u.id = c.user_id WHERE tg.id = $1 AND u.id = $2 AND tg.is_active = true LIMIT 1',
+        [groupId, user.id],
+      );
+      if (!rows.length) throw new ForbiddenException('You are not assigned to this training group');
+    }
+
     return this.dataSource.query(
       'SELECT p.* FROM players p INNER JOIN training_group_enrollments e ON e.player_id = p.id WHERE e.training_group_id = $1 AND e.is_active = true AND p.deleted_at IS NULL ORDER BY p.first_name_fa, p.last_name_fa',
       [groupId],
     );
   }
 
-  async list(query: PlayerQueryDto) {
+  async list(query: PlayerQueryDto, user: User) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
     const qb = this.players
@@ -241,6 +249,12 @@ export class PlayersService {
     if (query.coachId) qb.andWhere('coach.id = :coachId', { coachId: query.coachId });
     if (query.status) qb.andWhere('player.status = :status', { status: query.status });
 
+    if (user.role === UserRole.COACH) {
+      qb.innerJoin('player.responsibleCoach', 'scopedCoach')
+        .innerJoin('scopedCoach.user', 'scopedCoachUser')
+        .andWhere('scopedCoachUser.id = :coachUserId', { coachUserId: user.id });
+    }
+
     qb.orderBy('player.created_at', 'DESC').skip((page - 1) * limit).take(limit);
     const [items, total] = await qb.getManyAndCount();
     return { items, page, limit, total, pages: Math.ceil(total / limit) };
@@ -257,7 +271,12 @@ export class PlayersService {
 
   async getForUser(id: string, user: User): Promise<Player> {
     const player = await this.getById(id);
-    if (user.role === UserRole.ADMIN || user.role === UserRole.COACH) return player;
+    if (user.role === UserRole.ADMIN) return player;
+    if (user.role === UserRole.COACH) {
+      const isResponsible = player.responsibleCoach?.user?.id === user.id;
+      if (!isResponsible) throw new ForbiddenException('You cannot access this player');
+      return player;
+    }
 
     const relation = await this.playerGuardians.findOne({
       where: { player: { id: player.id }, guardian: { user: { id: user.id } } },
