@@ -34,11 +34,11 @@
     "dotenv": "^16.4.7",
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/passport": "^11.0.0",
-    "bcrypt": "^5.1.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "@nestjs/mapped-types": "^2.1.0",
-    "@nestjs/swagger": "^11.0.0"
+    "@nestjs/swagger": "^11.0.0",
+    "bcryptjs": "^2.4.3"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",
@@ -60,7 +60,7 @@
     "tsconfig-paths": "^4.2.0",
     "typeorm-ts-node-commonjs": "^0.3.20",
     "typescript": "^5.7.2",
-    "@types/bcrypt": "^5.0.2",
-    "@types/passport-jwt": "^4.0.1"
+    "@types/passport-jwt": "^4.0.1",
+    "@types/bcryptjs": "^2.4.6"
   }
 }
