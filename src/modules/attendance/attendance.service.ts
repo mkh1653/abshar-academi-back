@@ -116,7 +116,7 @@ export class AttendanceService {
       throw new BadRequestException('Invalid QR payload');
     }
 
-    const session = await this.sessions.findOne({ where: { id: payload.sessionId } });
+    const session = await this.sessions.findOne({ where: { id: payload.sessionId }, relations: { trainingGroup: true } });
     const player = await this.players.findOne({ where: { id: dto.playerId } });
 
     if (!session) throw new NotFoundException('Training session not found');
@@ -124,7 +124,7 @@ export class AttendanceService {
 
     const enrolled = await this.dataSource.query(
       'SELECT 1 FROM training_group_enrollments WHERE training_group_id = $1 AND player_id = $2 AND is_active = true AND starts_on <= $3 AND (ends_on IS NULL OR ends_on >= $3) LIMIT 1',
-      [session.trainingGroupId, dto.playerId, session.sessionDate],
+      [session.trainingGroup.id, dto.playerId, session.sessionDate],
     );
 
     if (!enrolled.length) {
