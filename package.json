@@ -18,7 +18,9 @@
     "migration:generate": "npm run typeorm -- migration:generate src/database/migrations/Initial -d src/database/data-source.ts",
     "migration:run": "npm run typeorm -- migration:run -d src/database/data-source.ts",
     "migration:revert": "npm run typeorm -- migration:revert -d src/database/data-source.ts",
-    "seed:admin": "ts-node scripts/seed-admin.ts"
+    "seed:admin": "ts-node scripts/seed-admin.ts",
+    "test:e2e": "jest -c test/jest-e2e.json --runInBand",
+    "test:ci": "npm test -- --runInBand"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.0",
