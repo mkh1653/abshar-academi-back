@@ -7,6 +7,7 @@ import { User } from '../users/entities/user.entity';
 import { UserRole } from '../users/enums/user-role.enum';
 import { PlayerQueryDto } from './dto/player-query.dto';
 import { RegisterPlayerDto } from './dto/register-player.dto';
+import { ChangeLevelDto } from './dto/change-level.dto';
 import { UpdatePlayerDto } from './dto/update-player.dto';
 import { PlayersService } from './players.service';
 
@@ -48,6 +49,13 @@ export class PlayersController {
       return this.playersService.getForUser(id, user).then(() => this.playersService.update(id, dto));
     }
     return this.playersService.update(id, dto);
+  }
+
+  @Patch('coach/players/:id/technical-level')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.COACH)
+  changeTechnicalLevel(@Param('id') id: string, @Body() dto: ChangeLevelDto, @CurrentUser() user: User) {
+    return this.playersService.changeTechnicalLevel(id, dto, user);
   }
 
   @Post('players/:id/approve')
