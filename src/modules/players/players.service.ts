@@ -241,7 +241,7 @@ export class PlayersService {
   async getById(id: string): Promise<Player> {
     const player = await this.players.findOne({
       where: { id },
-      relations: { technicalLevel: true, responsibleCoach: true, user: true },
+      relations: { technicalLevel: true, responsibleCoach: true },
     });
     if (!player) throw new NotFoundException('Player not found');
     return player;
