@@ -26,6 +26,7 @@ export class CreateInvoiceDto {
   @IsOptional() @IsDateString() periodStart?: string;
   @IsOptional() @IsDateString() periodEnd?: string;
   @IsOptional() @IsString() note?: string;
+  @IsOptional() @IsString() season?: string;
 
   @IsArray()
   @ValidateNested({ each: true })
