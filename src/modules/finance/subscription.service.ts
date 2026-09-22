@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { UserRole } from '../users/enums/user-role.enum';
 import { Player } from '../players/entities/player.entity';
@@ -11,6 +11,7 @@ import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 @Injectable()
 export class SubscriptionService {
   constructor(
+    private readonly dataSource: DataSource,
     @InjectRepository(PlayerSubscription) private readonly subscriptions: Repository<PlayerSubscription>,
     @InjectRepository(Player) private readonly players: Repository<Player>,
     @InjectRepository(Service) private readonly services: Repository<Service>,
@@ -26,7 +27,7 @@ export class SubscriptionService {
     if (!service) throw new NotFoundException('Service not found');
 
     if (user.role === UserRole.PARENT) {
-      const allowed = await this.players.query(
+      const allowed = await this.dataSource.query(
         'SELECT 1 FROM player_guardians pg INNER JOIN guardians g ON g.id = pg.guardian_id WHERE pg.player_id = $1 AND g.user_id = $2 LIMIT 1',
         [player.id, user.id],
       );
