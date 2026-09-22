@@ -22,7 +22,7 @@ export class ProgressController {
   @Get('players/:playerId/progress-reports')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.COACH, UserRole.PARENT)
-  list(@Param('playerId') playerId: string) {
-    return this.progressService.listForPlayer(playerId);
+  list(@Param('playerId') playerId: string, @CurrentUser() user: User) {
+    return this.progressService.listForPlayer(playerId, user);
   }
 }
