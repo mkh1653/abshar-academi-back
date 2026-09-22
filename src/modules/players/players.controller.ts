@@ -8,6 +8,8 @@ import { UserRole } from '../users/enums/user-role.enum';
 import { PlayerQueryDto } from './dto/player-query.dto';
 import { RegisterPlayerDto } from './dto/register-player.dto';
 import { ChangeLevelDto } from './dto/change-level.dto';
+import { AssignCoachDto } from './dto/assign-coach.dto';
+import { ChangeStatusDto } from './dto/change-status.dto';
 import { UpdatePlayerDto } from './dto/update-player.dto';
 import { PlayersService } from './players.service';
 
@@ -49,6 +51,27 @@ export class PlayersController {
       return this.playersService.getForUser(id, user).then(() => this.playersService.update(id, dto));
     }
     return this.playersService.update(id, dto);
+  }
+
+  @Get('coach/training-groups/:groupId/players')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.COACH, UserRole.ADMIN)
+  playersByGroup(@Param('groupId') groupId: string) {
+    return this.playersService.listByTrainingGroup(groupId);
+  }
+
+  @Patch('admin/players/:id/coach')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  assignCoach(@Param('id') id: string, @Body() dto: AssignCoachDto) {
+    return this.playersService.assignCoach(id, dto);
+  }
+
+  @Patch('admin/players/:id/status')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  changeStatus(@Param('id') id: string, @Body() dto: ChangeStatusDto) {
+    return this.playersService.changeStatus(id, dto);
   }
 
   @Patch('coach/players/:id/technical-level')
