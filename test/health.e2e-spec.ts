@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
+import request = require('supertest');
 import { HealthModule } from '../src/modules/health/health.module';
 
 describe('Health', () => {
@@ -19,7 +19,7 @@ describe('Health', () => {
   });
 
   it('returns ok', async () => {
-    await request.default(app.getHttpServer())
+    await request(app.getHttpServer())
       .get('/health')
       .expect(200)
       .expect((response) => {
