@@ -36,6 +36,9 @@ export class EvaluationsService {
     ]);
 
     if (!player) throw new NotFoundException('Player not found');
+    if (user.role === UserRole.COACH && player.responsibleCoach?.user?.id !== user.id) {
+      throw new ForbiddenException('You are not the responsible coach for this player');
+    }
     if (dto.recommendedLevelId && !level) {
       throw new NotFoundException('Level not found');
     }
@@ -84,7 +87,15 @@ export class EvaluationsService {
     });
   }
 
-  listForPlayer(playerId: string) {
+  async listForPlayer(playerId: string, user: User) {
+    if (user.role === UserRole.PARENT) {
+      const allowed = await this.dataSource.query(
+        'SELECT 1 FROM player_guardians pg INNER JOIN guardians g ON g.id = pg.guardian_id WHERE pg.player_id = $1 AND g.user_id = $2 LIMIT 1',
+        [playerId, user.id],
+      );
+      if (!allowed.length) throw new ForbiddenException('You cannot access this player');
+    }
+
     return this.assessments.find({
       where: { player: { id: playerId } },
       relations: { coach: true, recommendedLevel: true },
