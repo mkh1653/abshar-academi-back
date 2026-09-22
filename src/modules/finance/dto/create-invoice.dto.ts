@@ -1,5 +1,22 @@
-import { IsDateString, IsEnum, IsInt, IsOptional, IsString, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsDateString,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+  Min,
+  ValidateNested,
+} from 'class-validator';
 import { BillingCycle } from '../enums/billing-cycle.enum';
+
+export class InvoiceItemInputDto {
+  @IsOptional() @IsString() serviceId?: string;
+  @IsString() title!: string;
+  @IsInt() @Min(1) quantity!: number;
+  @IsInt() @Min(0) unitPriceRial!: number;
+}
 
 export class CreateInvoiceDto {
   @IsString() playerId!: string;
@@ -9,6 +26,11 @@ export class CreateInvoiceDto {
   @IsOptional() @IsDateString() periodStart?: string;
   @IsOptional() @IsDateString() periodEnd?: string;
   @IsOptional() @IsString() note?: string;
-  items!: Array<{ serviceId?: string; title: string; quantity: number; unitPriceRial: number }>;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => InvoiceItemInputDto)
+  items!: InvoiceItemInputDto[];
+
   @IsOptional() @IsInt() @Min(0) discountRial?: number;
 }
