@@ -313,6 +313,36 @@ export class PlayersService {
     return this.players.save(player);
   }
 
+  async updateParentProfile(id: string, dto: {
+    playerMobile?: string;
+    eitaaMobile?: string;
+    emergencyContact?: string;
+    address?: string;
+    postalCode?: string;
+    clothingSize?: string;
+    shoeSize?: string;
+    mediaConsent?: boolean;
+    parentalConsent?: boolean;
+    academyTermsAccepted?: boolean;
+    insuranceExpiryDate?: string;
+  }): Promise<Player> {
+    const player = await this.getById(id);
+
+    if (dto.playerMobile !== undefined) player.playerMobile = dto.playerMobile;
+    if (dto.eitaaMobile !== undefined) player.eitaaMobile = dto.eitaaMobile;
+    if (dto.emergencyContact !== undefined) player.emergencyContact = dto.emergencyContact;
+    if (dto.address !== undefined) player.address = dto.address;
+    if (dto.postalCode !== undefined) player.postalCode = dto.postalCode;
+    if (dto.clothingSize !== undefined) player.clothingSize = dto.clothingSize;
+    if (dto.shoeSize !== undefined) player.shoeSize = dto.shoeSize;
+    if (dto.insuranceExpiryDate !== undefined) player.insuranceExpiryDate = dto.insuranceExpiryDate;
+    if (dto.parentalConsent === true) player.parentalConsentAt = new Date();
+    if (dto.mediaConsent === true) player.mediaConsentAt = new Date();
+    if (dto.academyTermsAccepted === true) player.academyTermsAcceptedAt = new Date();
+
+    return this.players.save(player);
+  }
+
   async assignCoach(id: string, dto: AssignCoachDto): Promise<Player> {
     const player = await this.getById(id);
     const coach = await this.coaches.findOne({
