@@ -186,6 +186,16 @@ export class AttendanceService {
       if (!allowed) throw new ForbiddenException('You cannot access this player');
     }
 
+    if (user.role === UserRole.COACH) {
+      const player = await this.players.findOne({
+        where: { id: playerId },
+        relations: { responsibleCoach: { user: true } },
+      });
+      if (!player || player.responsibleCoach?.user?.id !== user.id) {
+        throw new ForbiddenException('You cannot access this player');
+      }
+    }
+
     return this.attendance.find({
       where: { player: { id: playerId } },
       relations: { trainingSession: { trainingGroup: true } },
