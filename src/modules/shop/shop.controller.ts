@@ -33,6 +33,18 @@ export class ShopController {
     return this.shop.createVariant(dto);
   }
 
+  @Post('shop/payments/initiate')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.PARENT)
+  initiatePayment(@CurrentUser() user: User, @Body() dto: import('../finance/dto/create-payment.dto').CreatePaymentDto) {
+    return this.shop.initiatePayment(user, dto);
+  }
+
+  @Post('shop/payments/callback')
+  paymentCallback(@Body() dto: import('../finance/dto/payment-callback.dto').PaymentCallbackDto) {
+    return this.shop.paymentCallback(dto);
+  }
+
   @Post('shop/orders')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.PARENT)
