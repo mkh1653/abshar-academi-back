@@ -1,8 +1,9 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from '../../../common/database/base.entity';
 import { Player } from '../../players/entities/player.entity';
 import { BillingCycle } from '../enums/billing-cycle.enum';
 import { InvoiceStatus } from '../enums/invoice-status.enum';
+import { InvoiceItem } from './invoice-item.entity';
 
 @Entity('invoices')
 @Index(['player', 'status'])
@@ -47,4 +48,7 @@ export class Invoice extends BaseEntity {
 
   @Column({ type: 'text', nullable: true })
   note!: string | null;
+
+  @OneToMany(() => InvoiceItem, (item) => item.invoice)
+  items!: InvoiceItem[];
 }
