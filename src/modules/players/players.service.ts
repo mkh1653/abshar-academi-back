@@ -29,12 +29,10 @@ export class PlayersService {
   constructor(
     private readonly dataSource: DataSource,
     @InjectRepository(Player) private readonly players: Repository<Player>,
-    @InjectRepository(Guardian) private readonly guardians: Repository<Guardian>,
     @InjectRepository(PlayerGuardian) private readonly playerGuardians: Repository<PlayerGuardian>,
     @InjectRepository(Level) private readonly levels: Repository<Level>,
     @InjectRepository(Coach) private readonly coaches: Repository<Coach>,
   ) {}
-
   async register(dto: RegisterPlayerDto) {
     if (!dto.fatherMobile && !dto.motherMobile) {
       throw new BadRequestException('At least one parent mobile number is required');
