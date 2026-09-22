@@ -10,6 +10,7 @@ describe('Guest attendance', () => {
       {} as never,
       { findOne: jest.fn().mockResolvedValue(null) } as never,
       {} as never,
+      {} as never,
       { save: jest.fn() } as never,
     );
 
