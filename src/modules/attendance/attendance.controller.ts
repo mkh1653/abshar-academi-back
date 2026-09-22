@@ -45,8 +45,8 @@ export class AttendanceController {
   @Post('attendance/qr')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.PARENT, UserRole.PLAYER)
-  markQr(@Body() dto: QrAttendanceDto) {
-    return this.attendanceService.markQr(dto);
+  markQr(@Body() dto: QrAttendanceDto, @CurrentUser() user: User) {
+    return this.attendanceService.markQr(dto, user);
   }
 
   @Get('players/:playerId/attendance')
