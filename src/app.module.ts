@@ -13,6 +13,7 @@ import { PlayersModule } from './modules/players/players.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { HealthModule } from './modules/health/health.module';
 import { ShopModule } from './modules/shop/shop.module';
+import { ReportsModule } from './modules/reports/reports.module';
 import { ContentModule } from './modules/content/content.module';
 import { ProgressModule } from './modules/progress/progress.module';
 import { UsersModule } from './modules/users/users.module';
@@ -34,6 +35,7 @@ import { UsersModule } from './modules/users/users.module';
     ShopModule,
     ContentModule,
     HealthModule,
+    ReportsModule,
     AcademyModule,
     AttendanceModule,
     EvaluationsModule,
