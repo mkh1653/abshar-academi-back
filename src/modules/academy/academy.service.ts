@@ -166,16 +166,27 @@ export class AcademyService {
       if (!allowed.length) throw new ForbiddenException('You cannot access this player');
     }
 
-    return this.enrollments.find({
+    const schedules = await this.enrollments.find({
       where: { player: { id: playerId }, isActive: true },
       relations: {
         trainingGroup: {
           level: true,
           hall: true,
-          coach: true,
+          coach: { user: true },
         },
       },
     });
+
+    if (user.role === UserRole.COACH) {
+      const hasAccess = schedules.some(
+        (item) => item.trainingGroup.coach.user?.id === user.id,
+      );
+      if (!hasAccess) {
+        throw new ForbiddenException('You cannot access this player schedule');
+      }
+    }
+
+    return schedules;
   }
 
   async upcomingSessions(playerId: string, user: User) {
