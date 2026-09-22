@@ -7,6 +7,7 @@ import { User } from '../users/entities/user.entity';
 import { UserRole } from '../users/enums/user-role.enum';
 import { BulkAttendanceDto } from './dto/bulk-attendance.dto';
 import { QrAttendanceDto } from './dto/qr-attendance.dto';
+import { GuestAttendanceDto } from './dto/guest-attendance.dto';
 import { AttendanceService } from './attendance.service';
 
 @Controller()
@@ -25,6 +26,20 @@ export class AttendanceController {
   @Roles(UserRole.ADMIN, UserRole.COACH)
   markBulk(@Param('id') id: string, @Body() dto: BulkAttendanceDto) {
     return this.attendanceService.markBulk(id, dto);
+  }
+
+  @Post('admin/training-sessions/:id/guests')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.COACH)
+  addGuest(@Param('id') id: string, @Body() dto: GuestAttendanceDto) {
+    return this.attendanceService.addGuest(id, dto);
+  }
+
+  @Get('admin/training-sessions/:id/guests')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.COACH)
+  listGuests(@Param('id') id: string) {
+    return this.attendanceService.listGuests(id);
   }
 
   @Post('attendance/qr')
