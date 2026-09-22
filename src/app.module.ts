@@ -10,6 +10,9 @@ import { DocumentsModule } from './modules/documents/documents.module';
 import { FinanceModule } from './modules/finance/finance.module';
 import { EvaluationsModule } from './modules/evaluations/evaluations.module';
 import { PlayersModule } from './modules/players/players.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ShopModule } from './modules/shop/shop.module';
+import { ContentModule } from './modules/content/content.module';
 import { ProgressModule } from './modules/progress/progress.module';
 import { UsersModule } from './modules/users/users.module';
 
@@ -26,6 +29,9 @@ import { UsersModule } from './modules/users/users.module';
     AuthModule,
     CoachesModule,
     PlayersModule,
+    NotificationsModule,
+    ShopModule,
+    ContentModule,
     AcademyModule,
     AttendanceModule,
     EvaluationsModule,
