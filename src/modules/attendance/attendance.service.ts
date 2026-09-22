@@ -12,13 +12,14 @@ import { User } from '../users/entities/user.entity';
 import { UserRole } from '../users/enums/user-role.enum';
 import { Player } from '../players/entities/player.entity';
 import { PlayerGuardian } from '../players/entities/player-guardian.entity';
-import { TrainingGroup } from '../academy/entities/training-group.entity';
 import { TrainingSession } from '../academy/entities/training-session.entity';
 import { Attendance } from './entities/attendance.entity';
 import { AttendanceSource } from './enums/attendance-source.enum';
 import { AttendanceStatus } from './enums/attendance-status.enum';
 import { BulkAttendanceDto } from './dto/bulk-attendance.dto';
 import { QrAttendanceDto } from './dto/qr-attendance.dto';
+import { GuestAttendanceDto } from './dto/guest-attendance.dto';
+import { GuestAttendance } from './entities/guest-attendance.entity';
 
 interface QrPayload {
   sessionId: string;
@@ -35,7 +36,7 @@ export class AttendanceService {
     @InjectRepository(TrainingSession) private readonly sessions: Repository<TrainingSession>,
     @InjectRepository(Player) private readonly players: Repository<Player>,
     @InjectRepository(PlayerGuardian) private readonly playerGuardians: Repository<PlayerGuardian>,
-    @InjectRepository(TrainingGroup) private readonly groups: Repository<TrainingGroup>,
+    @InjectRepository(GuestAttendance) private readonly guests: Repository<GuestAttendance>,
   ) {}
 
   async createQr(sessionId: string) {
@@ -154,6 +155,27 @@ export class AttendanceService {
     }
 
     return this.attendance.save(record);
+  }
+
+  async addGuest(sessionId: string, dto: GuestAttendanceDto) {
+    const session = await this.sessions.findOne({ where: { id: sessionId } });
+    if (!session) throw new NotFoundException('Training session not found');
+
+    return this.guests.save(
+      this.guests.create({
+        trainingSession: session,
+        guestName: dto.guestName,
+        guestMobile: dto.guestMobile,
+        note: dto.note ?? null,
+      }),
+    );
+  }
+
+  async listGuests(sessionId: string) {
+    return this.guests.find({
+      where: { trainingSession: { id: sessionId } },
+      order: { createdAt: 'DESC' },
+    });
   }
 
   async listForPlayer(playerId: string, user: User) {
