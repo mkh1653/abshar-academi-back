@@ -21,6 +21,8 @@ import { RegisterPlayerDto } from './dto/register-player.dto';
 import { UpdatePlayerDto } from './dto/update-player.dto';
 import { PlayerQueryDto } from './dto/player-query.dto';
 import { ChangeLevelDto } from './dto/change-level.dto';
+import { AssignCoachDto } from './dto/assign-coach.dto';
+import { ChangeStatusDto } from './dto/change-status.dto';
 
 @Injectable()
 export class PlayersService {
@@ -216,6 +218,13 @@ export class PlayersService {
     });
   }
 
+  async listByTrainingGroup(groupId: string) {
+    return this.dataSource.query(
+      'SELECT p.* FROM players p INNER JOIN training_group_enrollments e ON e.player_id = p.id WHERE e.training_group_id = $1 AND e.is_active = true AND p.deleted_at IS NULL ORDER BY p.first_name_fa, p.last_name_fa',
+      [groupId],
+    );
+  }
+
   async list(query: PlayerQueryDto) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
@@ -301,6 +310,22 @@ export class PlayersService {
     if (dto.parentalConsent === true && !player.parentalConsentAt) player.parentalConsentAt = new Date();
     if (dto.mediaConsent === true) player.mediaConsentAt = new Date();
     if (dto.academyTermsAccepted === true) player.academyTermsAcceptedAt = new Date();
+    return this.players.save(player);
+  }
+
+  async assignCoach(id: string, dto: AssignCoachDto): Promise<Player> {
+    const player = await this.getById(id);
+    const coach = await this.coaches.findOne({
+      where: { id: dto.coachId, isActive: true },
+    });
+    if (!coach) throw new NotFoundException('Coach not found');
+    player.responsibleCoach = coach;
+    return this.players.save(player);
+  }
+
+  async changeStatus(id: string, dto: ChangeStatusDto): Promise<Player> {
+    const player = await this.getById(id);
+    player.status = dto.status;
     return this.players.save(player);
   }
 
