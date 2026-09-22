@@ -22,7 +22,7 @@ export class EvaluationsController {
   @Get('players/:playerId/assessments')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.COACH, UserRole.PARENT)
-  list(@Param('playerId') playerId: string) {
-    return this.evaluationsService.listForPlayer(playerId);
+  list(@Param('playerId') playerId: string, @CurrentUser() user: User) {
+    return this.evaluationsService.listForPlayer(playerId, user);
   }
 }
