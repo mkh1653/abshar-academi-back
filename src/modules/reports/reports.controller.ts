@@ -5,11 +5,11 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { UserRole } from '../users/enums/user-role.enum';
 import { ReportsService } from './reports.service';
 
-@Controller('admin/reports')
+@Controller()
 export class ReportsController {
   constructor(private readonly reports: ReportsService) {}
 
-  @Get('attendance')
+  @Get('admin/reports/attendance')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   attendance(
@@ -20,14 +20,14 @@ export class ReportsController {
     return this.reports.attendance(from, to, coachId);
   }
 
-  @Get('players-summary')
+  @Get('admin/reports/players-summary')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   playersSummary() {
     return this.reports.playersSummary();
   }
 
-  @Get('../players/:playerId/performance-summary')
+  @Get('players/:playerId/performance-summary')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.COACH, UserRole.PARENT)
   performance(@Param('playerId') playerId: string) {
