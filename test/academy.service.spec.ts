@@ -20,6 +20,7 @@ describe('AcademyService', () => {
       {} as never,
       {} as never,
       {} as never,
+      {} as never,
       coaches as never,
       {} as never,
     );
