@@ -11,6 +11,11 @@ import { OrderItem } from './entities/order-item.entity';
 import { OrderStatus } from './enums/order-status.enum';
 import { CreateProductDto } from './dto/create-product.dto';
 import { CreateVariantDto } from './dto/create-variant.dto';
+import { CreatePaymentDto } from '../finance/dto/create-payment.dto';
+import { Payment } from '../finance/entities/payment.entity';
+import { PaymentStatus } from '../finance/enums/payment-status.enum';
+import { PaymentMethod } from '../finance/enums/payment-method.enum';
+import { MockPaymentGateway } from '../finance/mock-payment.gateway';
 import { CreateOrderDto } from './dto/create-order.dto';
 
 @Injectable()
@@ -21,6 +26,8 @@ export class ShopService {
     @InjectRepository(ProductVariant) private readonly variants: Repository<ProductVariant>,
     @InjectRepository(Order) private readonly orders: Repository<Order>,
     @InjectRepository(OrderItem) private readonly items: Repository<OrderItem>,
+    @InjectRepository(Payment) private readonly payments: Repository<Payment>,
+    private readonly mockPaymentGateway: MockPaymentGateway,
     @InjectRepository(Player) private readonly players: Repository<Player>,
   ) {}
 
@@ -127,6 +134,108 @@ export class ShopService {
         where: { id: order.id },
         relations: { player: true, items: { product: true, variant: true } },
       });
+    });
+  }
+
+  async initiatePayment(user: User, dto: CreatePaymentDto) {
+    const order = await this.orders.findOne({
+      where: { id: dto.invoiceId },
+      relations: { player: true },
+    });
+    if (!order) throw new NotFoundException('Order not found');
+
+    if (user.role === UserRole.PARENT) {
+      const allowed = await this.dataSource.query(
+        'SELECT 1 FROM player_guardians pg INNER JOIN guardians g ON g.id = pg.guardian_id WHERE pg.player_id = $1 AND g.user_id = $2 LIMIT 1',
+        [order.player.id, user.id],
+      );
+      if (!allowed.length) throw new ForbiddenException('You cannot pay this order');
+    }
+
+    if (order.status !== OrderStatus.PENDING) {
+      throw new BadRequestException('Order is not payable');
+    }
+
+    if (BigInt(dto.amountRial) !== BigInt(order.totalRial)) {
+      throw new BadRequestException('Payment amount must equal order total');
+    }
+
+    const payment = await this.payments.save(
+      this.payments.create({
+        invoice: null,
+        order,
+        amountRial: order.totalRial,
+        gateway: 'mock',
+        authority: null,
+        transactionId: null,
+        status: PaymentStatus.PENDING,
+        method: PaymentMethod.ONLINE,
+        paidAt: null,
+        callbackPayload: null,
+      }),
+    );
+
+    const request = await this.mockPaymentGateway.requestPayment({
+      amountRial: payment.amountRial,
+      paymentId: payment.id,
+      description: 'Abshar Academy order ' + order.orderNumber,
+      returnUrl: process.env.PAYMENT_RETURN_URL ?? 'http://localhost:3000/payment/callback',
+    });
+
+    payment.authority = request.authority;
+    await this.payments.save(payment);
+
+    return {
+      paymentId: payment.id,
+      authority: payment.authority,
+      amountRial: payment.amountRial,
+      checkoutUrl: request.checkoutUrl,
+    };
+  }
+
+  async paymentCallback(dto: import('../finance/dto/payment-callback.dto').PaymentCallbackDto) {
+    const payment = await this.payments.findOne({
+      where: { authority: dto.authority },
+      relations: { order: true },
+    });
+    if (!payment) throw new NotFoundException('Payment not found');
+    if (payment.status !== PaymentStatus.PENDING) return payment;
+
+    if (dto.status !== 'success') {
+      payment.status = PaymentStatus.FAILED;
+      payment.callbackPayload = dto as unknown as Record<string, unknown>;
+      return this.payments.save(payment);
+    }
+
+    const verified = await this.mockPaymentGateway.verifyPayment({
+      authority: dto.authority,
+      amountRial: payment.amountRial,
+    });
+    if (!verified.success) throw new BadRequestException('Payment verification failed');
+
+    return this.dataSource.transaction(async (manager) => {
+      const paymentRepo = manager.getRepository(Payment);
+      const orderRepo = manager.getRepository(Order);
+      const lockedPayment = await paymentRepo.findOne({
+        where: { id: payment.id },
+        relations: { order: true },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!lockedPayment) throw new NotFoundException('Payment not found');
+      if (lockedPayment.status !== PaymentStatus.PENDING) return lockedPayment;
+
+      lockedPayment.status = PaymentStatus.SUCCESS;
+      lockedPayment.transactionId = dto.transactionId ?? verified.transactionId ?? null;
+      lockedPayment.paidAt = new Date();
+      lockedPayment.callbackPayload = dto as unknown as Record<string, unknown>;
+      await paymentRepo.save(lockedPayment);
+
+      if (lockedPayment.order) {
+        lockedPayment.order.status = OrderStatus.PAID;
+        await orderRepo.save(lockedPayment.order);
+      }
+
+      return lockedPayment;
     });
   }
 
