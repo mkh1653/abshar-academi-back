@@ -14,7 +14,6 @@ export class AcademySeeds2026092103 implements MigrationInterface {
 
   public async down(q: QueryRunner): Promise<void> {
     await q.query('DELETE FROM "coaches" WHERE "first_name" = $1 AND "last_name" = $2', ['احمد', 'احمدی']);
-    await q.query('ALTER TABLE "coaches" ALTER COLUMN "mobile" SET NOT NULL');
     await q.query('DROP SEQUENCE IF EXISTS "player_code_seq"');
   }
 }
