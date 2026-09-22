@@ -24,6 +24,9 @@ import { PaymentStatus } from './enums/payment-status.enum';
 import { InvoiceStatus } from './enums/invoice-status.enum';
 import { PaymentMethod } from './enums/payment-method.enum';
 import { MockPaymentGateway } from './mock-payment.gateway';
+import { Discount } from './entities/discount.entity';
+import { DiscountType } from './enums/discount-type.enum';
+import { CreateDiscountDto } from './dto/create-discount.dto';
 
 @Injectable()
 export class FinanceService {
@@ -36,6 +39,7 @@ export class FinanceService {
     @InjectRepository(InvoiceItem) private readonly invoiceItems: Repository<InvoiceItem>,
     @InjectRepository(Payment) private readonly payments: Repository<Payment>,
     @InjectRepository(Expense) private readonly expenses: Repository<Expense>,
+    @InjectRepository(Discount) private readonly discounts: Repository<Discount>,
   ) {}
 
   listServices() {
@@ -69,7 +73,31 @@ export class FinanceService {
       (sum, item) => sum + item.quantity * item.unitPriceRial,
       0,
     );
-    const discount = dto.discountRial ?? 0;
+
+    let discount = dto.discountRial ?? 0;
+    if (dto.discountCode) {
+      const discountEntity = await this.discounts.findOne({
+        where: { code: dto.discountCode, isActive: true },
+      });
+      if (!discountEntity) throw new NotFoundException('Discount code not found');
+
+      const now = Date.now();
+      if (
+        (discountEntity.startsAt && discountEntity.startsAt.getTime() > now) ||
+        (discountEntity.endsAt && discountEntity.endsAt.getTime() < now)
+      ) {
+        throw new BadRequestException('Discount code is not active');
+      }
+
+      if (discountEntity.type === DiscountType.PERCENT) {
+        if (BigInt(discountEntity.value) > 100n) {
+          throw new BadRequestException('Invalid discount percentage');
+        }
+        discount = Math.floor(subtotal * Number(discountEntity.value) / 100);
+      } else {
+        discount = Number(discountEntity.value);
+      }
+    }
 
     if (discount < 0 || discount > subtotal) {
       throw new BadRequestException('Invalid discount');
@@ -133,6 +161,93 @@ export class FinanceService {
         relations: { player: true, items: { service: true } },
       });
     });
+  }
+
+  async createDiscount(dto: CreateDiscountDto) {
+    return this.discounts.save(
+      this.discounts.create({
+        code: dto.code,
+        type: dto.type,
+        value: String(dto.value),
+        startsAt: dto.startsAt ? new Date(dto.startsAt) : null,
+        endsAt: dto.endsAt ? new Date(dto.endsAt) : null,
+        isActive: true,
+      }),
+    );
+  }
+
+  async listPayments(user: User, playerId?: string) {
+    if (user.role === UserRole.PARENT) {
+      const rows = await this.dataSource.query(
+        'SELECT p.id FROM players p INNER JOIN player_guardians pg ON pg.player_id = p.id INNER JOIN guardians g ON g.id = pg.guardian_id WHERE g.user_id = $1 AND p.deleted_at IS NULL',
+        [user.id],
+      );
+      const playerIds = rows.map((row: { id: string }) => row.id);
+      if (playerId && !playerIds.includes(playerId)) {
+        throw new ForbiddenException('You cannot access this player');
+      }
+      if (!playerIds.length) return [];
+      const qb = this.payments.createQueryBuilder('payment')
+        .leftJoinAndSelect('payment.invoice', 'invoice')
+        .leftJoinAndSelect('payment.order', 'order')
+        .leftJoinAndSelect('invoice.player', 'invoicePlayer')
+        .leftJoinAndSelect('order.player', 'orderPlayer')
+        .where('(invoicePlayer.id IN (:...playerIds) OR orderPlayer.id IN (:...playerIds))', { playerIds });
+      if (playerId) {
+        qb.andWhere('(invoicePlayer.id = :playerId OR orderPlayer.id = :playerId)', { playerId });
+      }
+      return qb.orderBy('payment.created_at', 'DESC').getMany();
+    }
+
+    const qb = this.payments.createQueryBuilder('payment')
+      .leftJoinAndSelect('payment.invoice', 'invoice')
+      .leftJoinAndSelect('payment.order', 'order')
+      .leftJoinAndSelect('invoice.player', 'invoicePlayer')
+      .leftJoinAndSelect('order.player', 'orderPlayer');
+    if (playerId) {
+      qb.where('(invoicePlayer.id = :playerId OR orderPlayer.id = :playerId)', { playerId });
+    }
+    return qb.orderBy('payment.created_at', 'DESC').getMany();
+  }
+
+  async debtors() {
+    return this.invoices
+      .createQueryBuilder('invoice')
+      .innerJoinAndSelect('invoice.player', 'player')
+      .where('invoice.status IN (:...statuses)', {
+        statuses: [InvoiceStatus.PENDING, InvoiceStatus.PARTIALLY_PAID, InvoiceStatus.EXPIRED],
+      })
+      .orderBy('invoice.due_date', 'ASC')
+      .getMany();
+  }
+
+  async familyFinance(user: User) {
+    if (user.role !== UserRole.PARENT) {
+      throw new ForbiddenException('Only parents can access family finance summary');
+    }
+
+    const rows = await this.dataSource.query(
+      'SELECT p.id, p.player_code, p.first_name_fa, p.last_name_fa FROM players p INNER JOIN player_guardians pg ON pg.player_id = p.id INNER JOIN guardians g ON g.id = pg.guardian_id WHERE g.user_id = $1 AND p.deleted_at IS NULL ORDER BY p.first_name_fa',
+      [user.id],
+    );
+
+    const children = [];
+    for (const child of rows) {
+      const invoices = await this.invoices.find({
+        where: { player: { id: child.id } },
+        order: { dueDate: 'ASC' },
+      });
+      const outstandingRial = invoices.reduce(
+        (sum, invoice) => sum + BigInt(invoice.totalRial) - BigInt(invoice.paidRial),
+        0n,
+      );
+      children.push({
+        player: child,
+        outstandingRial: outstandingRial.toString(),
+        invoices,
+      });
+    }
+    return { children };
   }
 
   async listPlayerInvoices(user: User, playerId?: string) {
