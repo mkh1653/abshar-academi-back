@@ -25,6 +25,9 @@ export class Invoice extends BaseEntity {
   @Column({ name: 'period_end', type: 'date', nullable: true })
   periodEnd!: string | null;
 
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  season!: string | null;
+
   @Column({ name: 'issue_date', type: 'date' })
   issueDate!: string;
 
