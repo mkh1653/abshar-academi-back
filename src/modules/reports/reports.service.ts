@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 
 @Injectable()
@@ -28,7 +28,15 @@ export class ReportsService {
     );
   }
 
-  async performance(playerId: string) {
+  async performance(playerId: string, userId: string, role: string) {
+    if (role === 'PARENT') {
+      const allowed = await this.dataSource.query(
+        'SELECT 1 FROM player_guardians pg INNER JOIN guardians g ON g.id = pg.guardian_id WHERE pg.player_id = $1 AND g.user_id = $2 LIMIT 1',
+        [playerId, userId],
+      );
+      if (!allowed.length) throw new ForbiddenException('You cannot access this player');
+    }
+
     const [attendance, assessments, progress] = await Promise.all([
       this.dataSource.query(
         'SELECT status, COUNT(*)::int AS count FROM attendance_records WHERE player_id = $1 GROUP BY status',
