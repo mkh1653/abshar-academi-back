@@ -11,7 +11,7 @@ import { OrderItem } from './entities/order-item.entity';
 import { OrderStatus } from './enums/order-status.enum';
 import { CreateProductDto } from './dto/create-product.dto';
 import { CreateVariantDto } from './dto/create-variant.dto';
-import { CreatePaymentDto } from '../finance/dto/create-payment.dto';
+import { CreateOrderPaymentDto } from './dto/create-order-payment.dto';
 import { Payment } from '../finance/entities/payment.entity';
 import { PaymentStatus } from '../finance/enums/payment-status.enum';
 import { PaymentMethod } from '../finance/enums/payment-method.enum';
@@ -137,9 +137,9 @@ export class ShopService {
     });
   }
 
-  async initiatePayment(user: User, dto: CreatePaymentDto) {
+  async initiatePayment(user: User, dto: CreateOrderPaymentDto) {
     const order = await this.orders.findOne({
-      where: { id: dto.invoiceId },
+      where: { id: dto.orderId },
       relations: { player: true },
     });
     if (!order) throw new NotFoundException('Order not found');
