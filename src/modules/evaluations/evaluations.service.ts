@@ -29,7 +29,7 @@ export class EvaluationsService {
     }
 
     const [player, level] = await Promise.all([
-      this.players.findOne({ where: { id: dto.playerId } }),
+      this.players.findOne({ where: { id: dto.playerId }, relations: { responsibleCoach: { user: true } } }),
       dto.recommendedLevelId
         ? this.levels.findOne({ where: { id: dto.recommendedLevelId } })
         : null,
@@ -94,6 +94,16 @@ export class EvaluationsService {
         [playerId, user.id],
       );
       if (!allowed.length) throw new ForbiddenException('You cannot access this player');
+    }
+
+    if (user.role === UserRole.COACH) {
+      const player = await this.players.findOne({
+        where: { id: playerId },
+        relations: { responsibleCoach: { user: true } },
+      });
+      if (!player || player.responsibleCoach?.user?.id !== user.id) {
+        throw new ForbiddenException('You cannot access this player');
+      }
     }
 
     return this.assessments.find({
