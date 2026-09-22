@@ -33,4 +33,5 @@ export class CreateInvoiceDto {
   items!: InvoiceItemInputDto[];
 
   @IsOptional() @IsInt() @Min(0) discountRial?: number;
+  @IsOptional() @IsString() discountCode?: string;
 }
