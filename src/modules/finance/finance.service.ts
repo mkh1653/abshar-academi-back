@@ -436,6 +436,28 @@ export class FinanceService {
     return qb.orderBy('expense.occurred_on', 'DESC').getMany();
   }
 
+  async seasonSummary(season: string) {
+    const [incomeRows, expenseRows] = await Promise.all([
+      this.dataSource.query(
+        'SELECT COALESCE(SUM(amount_rial),0)::text AS total FROM payments WHERE status = $1 AND created_at::date IN (SELECT issue_date FROM invoices WHERE period_start IS NOT NULL AND period_end IS NOT NULL)',
+        [PaymentStatus.SUCCESS],
+      ),
+      this.dataSource.query(
+        'SELECT COALESCE(SUM(amount_rial),0)::text AS total FROM expenses WHERE season = $1',
+        [season],
+      ),
+    ]);
+
+    const income = BigInt(incomeRows[0].total);
+    const expenses = BigInt(expenseRows[0].total);
+    return {
+      season,
+      incomeRial: income.toString(),
+      expensesRial: expenses.toString(),
+      netRial: (income - expenses).toString(),
+    };
+  }
+
   async summary(query: FinanceQueryDto) {
     const from = query.from ?? '2000-01-01';
     const to = query.to ?? '2999-12-31';
