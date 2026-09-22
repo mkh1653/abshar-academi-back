@@ -67,8 +67,8 @@ export class PlayersController {
   @Get('coach/training-groups/:groupId/players')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.COACH, UserRole.ADMIN)
-  playersByGroup(@Param('groupId') groupId: string) {
-    return this.playersService.listByTrainingGroup(groupId);
+  playersByGroup(@Param('groupId') groupId: string, @CurrentUser() user: User) {
+    return this.playersService.listByTrainingGroup(groupId, user);
   }
 
   @Patch('admin/players/:id/coach')
